@@ -1,0 +1,87 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Background Image with Warm Overlay */
+body {
+  height: 100vh;
+  font-family: "Trebuchet MS", Verdana, sans-serif;
+  color: #ffffff;
+
+  background:
+    linear-gradient(rgba(60, 40, 20, 0.55), rgba(60, 40, 20, 0.55)),
+    url("imgs/BG-option2.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+/* Grid Layout */
+.app {
+  display: grid;
+  height: 100vh;
+  padding: 40px;
+  gap: 30px;
+
+  grid-template-columns: 2fr 1fr 2fr;
+  grid-template-rows: 100px 1fr 70px;
+
+  grid-template-areas:
+    "header header header"
+    "left   center right"
+    "footer footer footer";
+}
+
+/* Bubble Glass Panels */
+.section {
+  border-radius: 35px;
+  padding: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* Translucent bubble */
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(15px);
+
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.35),
+    inset 0 0 12px rgba(255, 255, 255, 0.25);
+
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.section:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    inset 0 0 14px rgba(255, 255, 255, 0.3);
+}
+
+/* Header Styling */
+.header {
+  grid-area: header;
+  justify-content: flex-start;
+
+  font-family: Georgia, serif;
+  font-size: 2.2rem;
+  font-weight: bold;
+  letter-spacing: 3px;
+}
+
+/* Grid Areas */
+.left { grid-area: left; }
+.center { grid-area: center; }
+.right { grid-area: right; }
+.footer {
+  grid-area: footer;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
