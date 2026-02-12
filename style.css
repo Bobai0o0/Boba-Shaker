@@ -65,6 +65,22 @@ body {
     inset 0 0 14px rgba(255, 255, 255, 0.3);
 }
 
+.boba-img { /*for the shaking part*/
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 20px;
+
+  /* Optional glow effect */
+  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+
+  transition: transform 0.3s ease;
+}
+
+.center:hover .boba-img {
+  transform: scale(1.05);
+}
+
 /* Header Styling */
 .header {
   grid-area: header;
