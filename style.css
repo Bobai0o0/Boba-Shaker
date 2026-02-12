@@ -36,6 +36,27 @@ body {
     "footer footer footer";
 }
 
+/* Header Styling */
+.header {
+  grid-area: header;
+  justify-content: flex-start;
+
+  font-family: Georgia, serif;
+  font-size: 2.2rem;
+  font-weight: bold;
+  letter-spacing: 3px;
+}
+
+/* Grid Areas */
+.left { grid-area: left; }
+.center { grid-area: center; }
+.right { grid-area: right; }
+.footer {
+  grid-area: footer;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
 /* Bubble Glass Panels */
 .section {
   border-radius: 35px;
@@ -65,39 +86,68 @@ body {
     inset 0 0 14px rgba(255, 255, 255, 0.3);
 }
 
-.boba-img { /*for the shaking part*/
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  border-radius: 20px;
+/*Boba Area*/
+.click-container {
+  text-align: center;
+  width: 100%;
+}
 
-  /* Optional glow effect */
-  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+.boba-img {
+  width: 85%;       
+  max-width: 400px;  
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  display: block;
+  margin: 0 auto 20px auto;
+}
 
-  transition: transform 0.3s ease;
+.boba-count {
+  font-size: 32px;
+  font-weight: bold;
+}
+
+.boba-label {
+  font-size: 14px;
+  opacity: 0.8;
 }
 
 .center:hover .boba-img {
   transform: scale(1.05);
 }
 
-/* Header Styling */
-.header {
-  grid-area: header;
-  justify-content: flex-start;
-
-  font-family: Georgia, serif;
-  font-size: 2.2rem;
-  font-weight: bold;
-  letter-spacing: 3px;
+/*Store Side*/
+.store-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
 }
 
-/* Grid Areas */
-.left { grid-area: left; }
-.center { grid-area: center; }
-.right { grid-area: right; }
-.footer {
-  grid-area: footer;
-  font-size: 0.9rem;
+.store-title {
+  text-align: center;
+  font-size: 14px;
   opacity: 0.9;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.store-btn {
+  padding: 12px;
+  font-size: 14px;
+  border-radius: 15px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.store-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(-2px);
+}
+
+.store-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

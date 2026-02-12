@@ -1,14 +1,17 @@
-
+// Authors: Ivy & Aneek
 
 const game = {
   boba: 0,
   perSecond: 0,
-  
+  clickMultiplier: 1, 
+  mixerMultiplier: 1,   
   upgrades: {
     spoon: { cost: 10, owned: 0, perSecond: 1, name: "Spoon" },
     mixer: { cost: 100, owned: 0, perSecond: 5, name: "Mixer" },
-    machine: { cost: 1000, owned: 0, perSecond: 25, name: "Machine" },
-    robot: { cost: 10000, owned: 0, perSecond: 100, name: "Robot" }
+    machine: { cost: 10000, owned: 0, perSecond: 25, name: "Machine" },
+    robot: { cost: 1000000, owned: 0, perSecond: 100, name: "Robot" },
+    clickBoost: { cost: 50, owned: 0, name: "Click Boost" },    
+    mixerBoost: { cost: 1000, owned: 0, name: "Mixer Boost" }    
   },
 
   loadGame() {
@@ -30,12 +33,26 @@ const game = {
 
   updatePerSecond() {
     this.perSecond = 0;
+
     for (let upgrade in this.upgrades) {
-      this.perSecond += this.upgrades[upgrade].owned * this.upgrades[upgrade].perSecond;
+      const u = this.upgrades[upgrade];
+      let perSecond = u.owned * (u.perSecond || 0);
+
+      // Apply mixer multiplier only to mixer
+      if (upgrade === "mixer") perSecond *= this.mixerMultiplier;
+
+      this.perSecond += perSecond;
     }
+
+    updateAnimationSpeed();
   },
 
   addBoba(amount = 1) {
+    const img = document.getElementById("clickImg");
+    if (img && img === document.activeElement) {
+      amount *= this.clickMultiplier;
+    }
+
     this.boba += amount;
     this.saveGame();
     this.updateDisplay();
@@ -46,6 +63,11 @@ const game = {
     if (this.boba >= upgrade.cost) {
       this.boba -= upgrade.cost;
       upgrade.owned += 1;
+
+      // Special effects for new upgrades
+      if (upgradeName === "clickBoost") this.clickMultiplier *= 2;
+      if (upgradeName === "mixerBoost") this.mixerMultiplier *= 2;
+
       this.updatePerSecond();
       this.saveGame();
       this.updateDisplay();
@@ -55,11 +77,11 @@ const game = {
   },
 
   updateDisplay() {
-    
+    // Update numbers
     document.getElementById("bobaCount").textContent = this.boba.toLocaleString();
     document.getElementById("perSecond").textContent = this.perSecond.toLocaleString();
 
-   
+    // Update store buttons
     for (let upgrade in this.upgrades) {
       const u = this.upgrades[upgrade];
       const btn = document.getElementById(`buy${upgrade.charAt(0).toUpperCase() + upgrade.slice(1)}`);
@@ -68,16 +90,84 @@ const game = {
         btn.disabled = this.boba < u.cost;
       }
     }
+
+    // Swap image for idle vs producing
+    const img = document.getElementById("clickImg");
+    if (!img) return;
+
+    if (this.perSecond > 0) {
+      if (!img.src.includes(".gif")) {
+        img.src = "imgs/boba-drinking-1.gif";
+      }
+    } else {
+      if (!img.src.includes(".png")) {
+        img.src = "imgs/boba-drinking-1.png";
+      }
+    }
   }
 };
 
+// ------------------------------
+// 🔥 Animation Speed Controller
+// ------------------------------
+let animationInterval = null;
 
-document.addEventListener("DOMContentLoaded", function() {
-  game.loadGame();
+function updateAnimationSpeed() {
+  const img = document.getElementById("clickImg");
+  if (!img) return;
+
+  // Always clear previous interval
+  if (animationInterval) {
+    clearInterval(animationInterval);
+    animationInterval = null;
+  }
+
+  if (game.perSecond > 0) {
+    const baseSpeed = 2000;
+
+    // 0.1% faster per 1 perSecond
+    const speedMultiplier = 1 - (game.perSecond * 0.001);
+    const newSpeed = Math.max(300, baseSpeed * speedMultiplier);
+
+    animationInterval = setInterval(() => {
+      img.src = "imgs/boba-drinking-1.gif";
+    }, newSpeed);
+  } else {
+    img.src = "imgs/boba-drinking-1.png";
+  }
+}
+
+// ------------------------------
+// UI Setup
+// ------------------------------
+
+document.addEventListener("DOMContentLoaded", function () {
   setupUI();
+
+  // Store buttons
+  document.getElementById("buySpoon")
+    .addEventListener("click", () => game.buyUpgrade("spoon"));
+
+  document.getElementById("buyMixer")
+    .addEventListener("click", () => game.buyUpgrade("mixer"));
+
+  document.getElementById("buyMachine")
+    .addEventListener("click", () => game.buyUpgrade("machine"));
+
+  document.getElementById("buyRobot")
+    .addEventListener("click", () => game.buyUpgrade("robot"));
+
+  document.getElementById("buyClickBoost")
+    .addEventListener("click", () => game.buyUpgrade("clickBoost"));
+
+  document.getElementById("buyMixerBoost")
+    .addEventListener("click", () => game.buyUpgrade("mixerBoost"));
+
+  // Load previous save
+  game.loadGame();
   game.updateDisplay();
 
- 
+  // Add passive Boba per second
   setInterval(() => {
     if (game.perSecond > 0) {
       game.addBoba(game.perSecond);
@@ -86,63 +176,23 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 function setupUI() {
- 
-  const leftSection = document.querySelector(".left");
-  const centerSection = document.querySelector(".center");
-  const rightSection = document.querySelector(".right");
+  const clickImg = document.getElementById("clickImg");
+  if (!clickImg) return;
 
- 
-  leftSection.innerHTML = `
-    <div style="text-align: center; position: relative;">
-      <button id="clickBtn" style="font-size: 100px; border: none; background: none; cursor: pointer; transition: transform 0.1s; margin-bottom: 10px;">🧋</button>
-      <img id="clickImg" src="imgs/boba-drinking-1.png" style="position: relative; width: 150px; height: 150px; pointer-events: none; display: block; margin: 0 auto;">
-      <div style="margin-top: 15px; font-size: 24px; font-weight: bold;" id="bobaCount">0</div>
-      <div style="font-size: 14px; opacity: 0.8;">Boba Pearls</div>
-    </div>
-  `;
-
- 
-  centerSection.innerHTML = `
-    <div style="text-align: center; width: 100%;">
-      <div style="font-size: 12px; opacity: 0.9; margin-bottom: 15px;">STATS</div>
-      <div style="font-size: 32px; font-weight: bold; margin-bottom: 20px;" id="perSecond">0</div>
-      <div style="font-size: 14px; opacity: 0.8;">Per Second</div>
-    </div>
-  `;
-
-
-  rightSection.innerHTML = `
-    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
-      <div style="font-size: 12px; opacity: 0.9; text-align: center; margin-bottom: 5px;">STORE</div>
-      <button id="buySpoon" onclick="game.buyUpgrade('spoon')" style="padding: 10px; font-size: 12px; border-radius: 10px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s;">Spoon</button>
-      <button id="buyMixer" onclick="game.buyUpgrade('mixer')" style="padding: 10px; font-size: 12px; border-radius: 10px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s;">Mixer</button>
-      <button id="buyMachine" onclick="game.buyUpgrade('machine')" style="padding: 10px; font-size: 12px; border-radius: 10px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s;">Machine</button>
-      <button id="buyRobot" onclick="game.buyUpgrade('robot')" style="padding: 10px; font-size: 12px; border-radius: 10px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); cursor: pointer; transition: all 0.2s;">Robot</button>
-    </div>
-  `;
-
- 
-  const clickBtn = document.getElementById("clickBtn");
-  clickBtn.addEventListener("click", function() {
+  // Clicking GIF gives Boba
+  clickImg.addEventListener("click", function () {
     game.addBoba(1);
-    this.style.transform = "scale(0.9)";
+
+    // Press animation
+    this.style.transform = "scale(0.95)";
     setTimeout(() => this.style.transform = "scale(1)", 100);
 
-    
-    const img = document.getElementById("clickImg");
-    img.src = "imgs/boba-drinking-1.gif";
+    // Swap to GIF briefly
+    this.src = "imgs/boba-drinking-1.gif";
     setTimeout(() => {
-      img.src = "imgs/boba-drinking-1.png";
+      if (game.perSecond === 0) {
+        this.src = "imgs/boba-drinking-1.png";
+      }
     }, 500);
-  });
-
-
-  document.querySelectorAll("button[onclick]").forEach(btn => {
-    btn.addEventListener("mouseover", function() {
-      if (!this.disabled) this.style.background = "rgba(255,255,255,0.3)";
-    });
-    btn.addEventListener("mouseout", function() {
-      if (!this.disabled) this.style.background = "rgba(255,255,255,0.2)";
-    });
   });
 }

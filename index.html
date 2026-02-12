@@ -4,16 +4,44 @@
   <meta charset="UTF-8">
   <title>Boba Clicker</title>
   <link rel="stylesheet" href="style.css">
+  <script src="script.js"></script>
 </head>
 <body>
 
   <div class="app">
     <div class="section header">Boba Shaker</div>
     <div class="section left">
-        <img src="imgs/boba-drinking-1.gif" alt="Boba panda" class="boba-gif">
+      <div class="click-container">
+        <img id="clickImg" src="imgs/boba-drinking-1.png" class="boba-img" />
+        <div class="boba-count" id="bobaCount">0</div>
+        <div class="boba-label">Boba Pearls</div>
+      </div>
     </div>
-    <div class="section center">middle</div>
-    <div class="section right">Store</div>
+
+    <div class="section center">
+      <div class="stats-container">
+        <div class="stats-title">STATS</div>
+        <div class="per-second" id="perSecond">0</div>
+        <div class="stats-label">Per Second</div>
+      </div>
+    </div>
+
+    <div class="section right">
+      <div class="store-container">
+        <div class="store-title">STORE</div>
+
+        <button id="buyClickBoost" class="store-btn">Click Boost</button>
+        <button id="buyMixerBoost" class="store-btn">Mixer Boost</button>
+
+        <div class="store-title">STORE</div>
+
+        <button id="buySpoon" class="store-btn">Spoon</button>
+        <button id="buyMixer" class="store-btn">Mixer</button>
+        <button id="buyMachine" class="store-btn">Machine</button>
+        <button id="buyRobot" class="store-btn">Robot</button>
+      </div>
+    </div>
+
     <div class="section footer">Footer</div>
   </div>
 
