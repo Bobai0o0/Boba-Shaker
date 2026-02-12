@@ -11,15 +11,33 @@ const game = {
     machine: { cost: 10000, owned: 0, perSecond: 25, name: "Machine" },
     robot: { cost: 1000000, owned: 0, perSecond: 100, name: "Robot" },
     clickBoost: { cost: 50, owned: 0, name: "Click Boost" },    
-    mixerBoost: { cost: 1000, owned: 0, name: "Mixer Boost" }    
+    mixerBoost: { cost: 1000, owned: 0, name: "Mixer Boost" },
+    machineBoost: { cost: 100000, owned: 0, name: "Machine Boost" } 
   },
 
+  // ------------------------------
+  // Load saved data but keep default costs/names
+  // ------------------------------
   loadGame() {
     const saved = localStorage.getItem("bobaGame");
     if (saved) {
       const data = JSON.parse(saved);
+
       this.boba = data.boba || 0;
-      this.upgrades = data.upgrades || this.upgrades;
+
+      // Only restore 'owned' and multipliers, keep costs and names
+      if (data.upgrades) {
+        for (let upgrade in this.upgrades) {
+          if (data.upgrades[upgrade] && typeof data.upgrades[upgrade].owned === "number") {
+            this.upgrades[upgrade].owned = data.upgrades[upgrade].owned;
+          }
+        }
+      }
+
+      // Restore multipliers if saved
+      if (data.clickMultiplier) this.clickMultiplier = data.clickMultiplier;
+      if (data.mixerMultiplier) this.mixerMultiplier = data.mixerMultiplier;
+
       this.updatePerSecond();
     }
   },
@@ -27,7 +45,9 @@ const game = {
   saveGame() {
     localStorage.setItem("bobaGame", JSON.stringify({
       boba: this.boba,
-      upgrades: this.upgrades
+      upgrades: this.upgrades,
+      clickMultiplier: this.clickMultiplier,
+      mixerMultiplier: this.mixerMultiplier
     }));
   },
 
@@ -48,31 +68,37 @@ const game = {
   },
 
   addBoba(amount = 1) {
-    const img = document.getElementById("clickImg");
-    if (img && img === document.activeElement) {
-      amount *= this.clickMultiplier;
-    }
-
+    // Apply click multiplier
+    amount *= this.clickMultiplier;
     this.boba += amount;
+
     this.saveGame();
     this.updateDisplay();
   },
 
   buyUpgrade(upgradeName) {
     const upgrade = this.upgrades[upgradeName];
+
+    // If the upgrade is a one-time purchase and already owned, do nothing
+    if ((upgradeName === "clickBoost" || upgradeName === "mixerBoost") && upgrade.owned >= 1) {
+        alert(`${upgrade.name} can only be purchased once!`);
+        return;
+    }
+
     if (this.boba >= upgrade.cost) {
-      this.boba -= upgrade.cost;
-      upgrade.owned += 1;
+        this.boba -= upgrade.cost;
+        upgrade.owned += 1;
 
-      // Special effects for new upgrades
-      if (upgradeName === "clickBoost") this.clickMultiplier *= 2;
-      if (upgradeName === "mixerBoost") this.mixerMultiplier *= 2;
+        // Special effects for new upgrades
+        if (upgradeName === "clickBoost") this.clickMultiplier *= 2;
+        if (upgradeName === "mixerBoost") this.mixerMultiplier *= 2;
+        if (upgradeName === "machineBoost") this.machineMultiplier *= 2;
 
-      this.updatePerSecond();
-      this.saveGame();
-      this.updateDisplay();
+        this.updatePerSecond();
+        this.saveGame();
+        this.updateDisplay();
     } else {
-      alert(`Need ${upgrade.cost - this.boba} more boba!`);
+        alert(`Need ${upgrade.cost - this.boba} more boba!`);
     }
   },
 
@@ -83,12 +109,19 @@ const game = {
 
     // Update store buttons
     for (let upgrade in this.upgrades) {
-      const u = this.upgrades[upgrade];
-      const btn = document.getElementById(`buy${upgrade.charAt(0).toUpperCase() + upgrade.slice(1)}`);
-      if (btn) {
-        btn.innerHTML = `${u.name}<br>Cost: ${u.cost}<br>Owned: ${u.owned}`;
-        btn.disabled = this.boba < u.cost;
-      }
+        const u = this.upgrades[upgrade];
+        const btn = document.getElementById(`buy${upgrade.charAt(0).toUpperCase() + upgrade.slice(1)}`);
+        if (btn) {
+            btn.innerHTML = `${u.name}<br>Cost: ${u.cost}<br>Owned: ${u.owned}`;
+
+            // Hide button for one-time upgrades if already owned
+            if ((upgrade === "clickBoost" || upgrade === "mixerBoost" || upgrade === "machineBoost") && u.owned >= 1) {
+                btn.style.display = "none";
+            } else {
+                btn.style.display = "block";
+                btn.disabled = this.boba < u.cost;
+            }
+        }
     }
 
     // Swap image for idle vs producing
@@ -96,13 +129,13 @@ const game = {
     if (!img) return;
 
     if (this.perSecond > 0) {
-      if (!img.src.includes(".gif")) {
-        img.src = "imgs/boba-drinking-1.gif";
-      }
+        if (!img.src.includes(".gif")) {
+            img.src = "imgs/boba-drinking-1.gif";
+        }
     } else {
-      if (!img.src.includes(".png")) {
-        img.src = "imgs/boba-drinking-1.png";
-      }
+        if (!img.src.includes(".png")) {
+            img.src = "imgs/boba-drinking-1.png";
+        }
     }
   }
 };
@@ -140,28 +173,17 @@ function updateAnimationSpeed() {
 // ------------------------------
 // UI Setup
 // ------------------------------
-
 document.addEventListener("DOMContentLoaded", function () {
   setupUI();
 
   // Store buttons
-  document.getElementById("buySpoon")
-    .addEventListener("click", () => game.buyUpgrade("spoon"));
-
-  document.getElementById("buyMixer")
-    .addEventListener("click", () => game.buyUpgrade("mixer"));
-
-  document.getElementById("buyMachine")
-    .addEventListener("click", () => game.buyUpgrade("machine"));
-
-  document.getElementById("buyRobot")
-    .addEventListener("click", () => game.buyUpgrade("robot"));
-
-  document.getElementById("buyClickBoost")
-    .addEventListener("click", () => game.buyUpgrade("clickBoost"));
-
-  document.getElementById("buyMixerBoost")
-    .addEventListener("click", () => game.buyUpgrade("mixerBoost"));
+  document.getElementById("buySpoon").addEventListener("click", () => game.buyUpgrade("spoon"));
+  document.getElementById("buyMixer").addEventListener("click", () => game.buyUpgrade("mixer"));
+  document.getElementById("buyMachine").addEventListener("click", () => game.buyUpgrade("machine"));
+  document.getElementById("buyRobot").addEventListener("click", () => game.buyUpgrade("robot"));
+  document.getElementById("buyClickBoost").addEventListener("click", () => game.buyUpgrade("clickBoost"));
+  document.getElementById("buyMixerBoost").addEventListener("click", () => game.buyUpgrade("mixerBoost"));
+  document.getElementById("buyMachineBoost").addEventListener("click", () => game.buyUpgrade("machineBoost"));
 
   // Load previous save
   game.loadGame();
