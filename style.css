@@ -28,7 +28,7 @@ body {
   gap: 20px;
 
   grid-template-columns: 2fr 1.5fr 2fr;
-  grid-template-rows: 100px 1fr 70px;
+  grid-template-rows: 80px 1fr 115px;
 
   grid-template-areas:
     "header header right"
@@ -115,6 +115,60 @@ body {
   transform: scale(1.05);
 }
 
+/* ============================= */
+/* CENTER STATS SCALING */
+/* ============================= */
+
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+}
+
+.stats-title {
+  font-size: 1.2rem;
+  letter-spacing: 4px;
+  opacity: 0.8;
+  margin-bottom: 10px;
+}
+
+.per-second {
+  font-size: 5rem;          /* BIG number */
+  font-weight: 900;
+  line-height: 1;
+  margin: 10px 0;
+}
+
+.stats-label {
+  font-size: 1.3rem;
+  opacity: 0.85;
+}
+
+.help-btn {
+  padding: 15px;
+  font-size: 25px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  transform: translateY(30px);
+}
+
+.help-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.3);
+  transform: translateY(26px);
+}
+
+.help-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /*Store Side*/
 .store-container {
   display: flex;
@@ -150,4 +204,156 @@ body {
 .store-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* --- Achievements UI --- */
+.center {
+  position: relative; /* so toasts can center inside this panel */
+}
+
+.achievement-toasts {
+  position: absolute;
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  width: min(92%, 420px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+  pointer-events: none; /* allow clicking through except buttons inside */
+}
+
+.achievement-toast {
+  pointer-events: auto;
+  position: relative;
+  padding: 12px 42px 12px 14px;
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(14px);
+
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+  animation: toastIn 250ms ease;
+}
+
+.achievement-toast .toast-title {
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+}
+
+.achievement-toast .toast-desc {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  line-height: 1.2;
+}
+
+.toast-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 26px;
+}
+
+.toast-close:hover {
+  background: rgba(255,255,255,0.28);
+}
+
+.achievement-toast.fade-out {
+  animation: toastOut 280ms ease forwards;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toastOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-6px); }
+}
+
+/* ============================= */
+/* FOOTER ACHIEVEMENTS ROW */
+/* ============================= */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+}
+
+.footer-content {
+  width: 100%;
+  text-align: center;
+}
+
+.footer-title {
+  font-size: 12px;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+  opacity: 0.8;
+}
+
+/* Big horizontal row */
+.footer-badges {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 6px 0;
+  scrollbar-width: none; /* Firefox */
+}
+
+.footer-badges::-webkit-scrollbar {
+  display: none; /* Chrome */
+}
+
+/* Large badge style */
+.badge {
+  min-width: 110px;
+  padding: 8px 8px;   /* reduced from 12px 10px */
+  border-radius: 16px;
+
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(12px);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  transition: transform 0.2s ease;
+}
+
+.badge:hover {
+  transform: translateY(-3px) scale(1.05);
+}
+
+.badge-icon {
+  font-size: 20px;   /* was 22px */
+  margin-bottom: 2px; /* was 4px */
+}
+
+.badge-name {
+  font-size: 12px;   /* was 13px */
+  font-weight: 700;
+}
+
+.badge-sub {
+  font-size: 10px;   /* was 11px */
+  opacity: 0.8;
+  margin-top: 1px;   /* was 2px */
 }
