@@ -280,7 +280,7 @@ function setupUI() {
 // Help Pop Up! 
 function showHelp() {
   alert(
-`🧋 BOBA CLICKER HELP 🧋
+`🧋 BOBA SHAKER HELP 🧋
 
 HOW TO PLAY:
 • Click the boba image to earn boba
