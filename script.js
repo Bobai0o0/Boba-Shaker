@@ -3,17 +3,18 @@
 const game = {
   boba: 0,
   perSecond: 0,
-  clickMultiplier: 1, 
-  mixerMultiplier: 1,   
+  clickMultiplier: 1,
+  mixerMultiplier: 1,
   machineMultiplier: 1,
   upgrades: {
     spoon: { cost: 10, owned: 0, perSecond: 1, name: "Spoon" },
     mixer: { cost: 100, owned: 0, perSecond: 5, name: "Mixer" },
     machine: { cost: 10000, owned: 0, perSecond: 25, name: "Machine" },
     robot: { cost: 1000000, owned: 0, perSecond: 100, name: "Robot" },
-    clickBoost: { cost: 50, owned: 0, name: "Click Boost" },    
+    clickBoost: { cost: 50, owned: 0, name: "Click Boost" },
+    clickMultiply: { cost: 500, owned: 0, name: "Click Multiplier" },
     mixerBoost: { cost: 1000, owned: 0, name: "Mixer Boost" },
-    machineBoost: { cost: 100000, owned: 0, name: "Machine Boost" } 
+    machineBoost: { cost: 100000, owned: 0, name: "Machine Boost" }
   },
   achievementsUnlocked: {}, // { [id]: true }
   lastBobaMilestone: 0,
@@ -31,7 +32,10 @@ const game = {
       // Only restore 'owned' and multipliers, keep costs and names
       if (data.upgrades) {
         for (let upgrade in this.upgrades) {
-          if (data.upgrades[upgrade] && typeof data.upgrades[upgrade].owned === "number") {
+          if (
+            data.upgrades[upgrade] &&
+            typeof data.upgrades[upgrade].owned === "number"
+          ) {
             this.upgrades[upgrade].owned = data.upgrades[upgrade].owned;
           }
         }
@@ -40,8 +44,9 @@ const game = {
       // Restore multipliers if saved
       if (data.clickMultiplier) this.clickMultiplier = data.clickMultiplier;
       if (data.mixerMultiplier) this.mixerMultiplier = data.mixerMultiplier;
+      if (data.machineMultiplier) this.machineMultiplier = data.machineMultiplier;
 
-      // NEW: achievements restore
+      // achievements restore
       this.achievementsUnlocked = data.achievementsUnlocked || {};
       this.lastBobaMilestone = data.lastBobaMilestone ?? 1;
 
@@ -50,14 +55,18 @@ const game = {
   },
 
   saveGame() {
-    localStorage.setItem("bobaGame", JSON.stringify({
-      boba: this.boba,
-      upgrades: this.upgrades,
-      clickMultiplier: this.clickMultiplier,
-      mixerMultiplier: this.mixerMultiplier,
-      achievementsUnlocked: this.achievementsUnlocked,
-      lastBobaMilestone: this.lastBobaMilestone
-    }));
+    localStorage.setItem(
+      "bobaGame",
+      JSON.stringify({
+        boba: this.boba,
+        upgrades: this.upgrades,
+        clickMultiplier: this.clickMultiplier,
+        mixerMultiplier: this.mixerMultiplier,
+        machineMultiplier: this.machineMultiplier,
+        achievementsUnlocked: this.achievementsUnlocked,
+        lastBobaMilestone: this.lastBobaMilestone
+      })
+    );
   },
 
   updatePerSecond() {
@@ -67,7 +76,7 @@ const game = {
       const u = this.upgrades[upgrade];
       let perSecond = u.owned * (u.perSecond || 0);
 
-      // Apply mixer multiplier only to mixer
+      // Apply multipliers
       if (upgrade === "mixer") perSecond *= this.mixerMultiplier;
       if (upgrade === "machine") perSecond *= this.machineMultiplier;
 
@@ -77,13 +86,25 @@ const game = {
     updateAnimationSpeed();
   },
 
-  addBoba(amount = 1) {
-    // Apply click multiplier
-    amount *= this.clickMultiplier;
-    this.boba += amount;
+  addBoba(amount = null) {
+    // If amount is provided (passive income), use it
+    if (amount !== null) {
+      this.boba += amount;
+    } else {
+      // Otherwise it's a click
+
+      let clickValue = 1;
+
+      // Add +1 per clickBoost owned
+      clickValue += this.upgrades.clickBoost.owned;
+
+      // Apply multiplier
+      clickValue *= this.clickMultiplier;
+
+      this.boba += clickValue;
+    }
 
     checkAchievements();
-
     this.saveGame();
     this.updateDisplay();
   },
@@ -92,26 +113,32 @@ const game = {
     const upgrade = this.upgrades[upgradeName];
 
     // If the upgrade is a one-time purchase and already owned, do nothing
-    if ((upgradeName === "clickBoost" || upgradeName === "mixerBoost" || upgradeName === "machineBoost") && upgrade.owned >= 1) {
-        alert(`${upgrade.name} can only be purchased once!`);
-        return;
+    if (
+      (upgradeName === "clickBoost" ||
+        upgradeName === "clickMultiply" ||
+        upgradeName === "mixerBoost" ||
+        upgradeName === "machineBoost") &&
+      upgrade.owned >= 1
+    ) {
+      alert(`${upgrade.name} can only be purchased once!`);
+      return;
     }
 
     if (this.boba >= upgrade.cost) {
-        this.boba -= upgrade.cost;
-        upgrade.owned += 1;
+      this.boba -= upgrade.cost;
+      upgrade.owned += 1;
 
-        // Special effects for new upgrades
-        if (upgradeName === "clickBoost") this.clickMultiplier *= 2;
-        if (upgradeName === "mixerBoost") this.mixerMultiplier *= 2;
-        if (upgradeName === "machineBoost") this.machineMultiplier *= 2;
+      // Special effects for new upgrades
+      if (upgradeName === "clickMultiply") this.clickMultiplier *= 2; 
+      if (upgradeName === "mixerBoost") this.mixerMultiplier *= 2;
+      if (upgradeName === "machineBoost") this.machineMultiplier *= 2;
 
-        this.updatePerSecond();
-        checkAchievements();
-        this.saveGame();
-        this.updateDisplay();
+      this.updatePerSecond();
+      checkAchievements();
+      this.saveGame();
+      this.updateDisplay();
     } else {
-        alert(`Need ${upgrade.cost - this.boba} more boba!`);
+      alert(`Need ${upgrade.cost - this.boba} more boba!`);
     }
   },
 
@@ -122,19 +149,27 @@ const game = {
 
     // Update store buttons
     for (let upgrade in this.upgrades) {
-        const u = this.upgrades[upgrade];
-        const btn = document.getElementById(`buy${upgrade.charAt(0).toUpperCase() + upgrade.slice(1)}`);
-        if (btn) {
-            btn.innerHTML = `${u.name}<br>Cost: ${u.cost}<br>Owned: ${u.owned}`;
+      const u = this.upgrades[upgrade];
+      const btn = document.getElementById(
+        `buy${upgrade.charAt(0).toUpperCase() + upgrade.slice(1)}`
+      );
+      if (btn) {
+        btn.innerHTML = `${u.name}<br>Cost: ${u.cost}<br>Owned: ${u.owned}`;
 
-            // Hide button for one-time upgrades if already owned
-            if ((upgrade === "clickBoost" || upgrade === "mixerBoost" || upgrade === "machineBoost") && u.owned >= 1) {
-                btn.style.display = "none";
-            } else {
-                btn.style.display = "block";
-                btn.disabled = this.boba < u.cost;
-            }
+        // Hide button for one-time upgrades if already owned
+        if (
+          (upgrade === "clickBoost" ||
+            upgrade === "clickMultiply" ||
+            upgrade === "mixerBoost" ||
+            upgrade === "machineBoost") &&
+          u.owned >= 1
+        ) {
+          btn.style.display = "none";
+        } else {
+          btn.style.display = "block";
+          btn.disabled = this.boba < u.cost;
         }
+      }
     }
 
     // Swap image for idle vs producing
@@ -142,23 +177,21 @@ const game = {
     if (!img) return;
 
     if (this.perSecond > 0) {
-        if (!img.src.includes(".gif")) {
-            img.src = "imgs/boba-drinking-1.gif";
-        }
+      if (!img.src.includes(".gif")) {
+        img.src = "imgs/boba-drinking-1.gif";
+      }
     } else {
-        if (!img.src.includes(".png")) {
-            img.src = "imgs/boba-drinking-1.png";
-        }
+      if (!img.src.includes(".png")) {
+        img.src = "imgs/boba-drinking-1.png";
+      }
     }
   }
 };
 
 const ACHIEVEMENTS = [
-  { id: "first_100",      title: "Pearl Beginner", desc: "Reach 100 boba.",        threshold: 100,      icon: "🧋" },
-  { id: "first_10000",    title: "Boba Hoarder",   desc: "Reach 10,000 boba.",     threshold: 10000,    icon: "💎" },
-  { id: "first_1m",       title: "Boba Millionaire", desc: "Reach 1,000,000 boba.", threshold: 1000000, icon: "🏆" },
-
-  // doubling milestones: 1,2,4,8,16,... (we'll handle these dynamically)
+  { id: "first_100", title: "Pearl Beginner", desc: "Reach 100 boba.", threshold: 100, icon: "🧋" },
+  { id: "first_10000", title: "Boba Hoarder", desc: "Reach 10,000 boba.", threshold: 10000, icon: "💎" },
+  { id: "first_1m", title: "Boba Millionaire", desc: "Reach 1,000,000 boba.", threshold: 1000000, icon: "🏆" },
   { id: "double", dynamic: true, title: "Double Trouble!", desc: "Double your boba total!", icon: "⚡" }
 ];
 
@@ -181,7 +214,7 @@ function updateAnimationSpeed() {
     const baseSpeed = 2000;
 
     // 0.1% faster per 1 perSecond
-    const speedMultiplier = 1 - (game.perSecond * 0.001);
+    const speedMultiplier = 1 - game.perSecond * 0.001;
     const newSpeed = Math.max(300, baseSpeed * speedMultiplier);
 
     animationInterval = setInterval(() => {
@@ -204,6 +237,7 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("buyMachine").addEventListener("click", () => game.buyUpgrade("machine"));
   document.getElementById("buyRobot").addEventListener("click", () => game.buyUpgrade("robot"));
   document.getElementById("buyClickBoost").addEventListener("click", () => game.buyUpgrade("clickBoost"));
+  document.getElementById("buyClickMultiply").addEventListener("click", () => game.buyUpgrade("clickMultiply"));
   document.getElementById("buyMixerBoost").addEventListener("click", () => game.buyUpgrade("mixerBoost"));
   document.getElementById("buyMachineBoost").addEventListener("click", () => game.buyUpgrade("machineBoost"));
 
@@ -231,7 +265,7 @@ function setupUI() {
 
     // Press animation
     this.style.transform = "scale(0.95)";
-    setTimeout(() => this.style.transform = "scale(1)", 100);
+    setTimeout(() => (this.style.transform = "scale(1)"), 100);
 
     // Swap to GIF briefly
     this.src = "imgs/boba-drinking-1.gif";
@@ -242,6 +276,42 @@ function setupUI() {
     }, 500);
   });
 }
+
+// Help Pop Up! 
+function showHelp() {
+  alert(
+`🧋 BOBA CLICKER HELP 🧋
+
+HOW TO PLAY:
+• Click the boba image to earn boba
+• Buy upgrades to earn boba per second
+• Buy boosts to double specific production
+• As your boba per second increases, the animation gets faster
+
+UPGRADES:
+• Spoon: +1 boba/sec
+• Mixer: +5 boba/sec (affected by Mixer Boost)
+• Machine: +25 boba/sec (affected by Machine Boost)
+• Robot: +100 boba/sec
+
+BOOSTS:
+• Click Boost: +1 click power
+• Click Multiplier: doubles click power (one-time)
+• Mixer Boost: doubles mixer output (one-time)
+• Machine Boost: doubles machine output (one-time)
+
+ACHIEVEMENTS:
+• Pearl Beginner: reach 100 boba
+• Boba Hoarder: reach 10,000 boba
+• Boba Millionaire: reach 1,000,000 boba
+• Double Trouble: reach 2, 4, 8, 16, 32, ... boba (doubling milestones)`
+  );
+}
+  //Button ACTIVATION!
+  const helpBtn = document.getElementById("helpButton");
+  if (helpBtn) {
+    helpBtn.addEventListener("click", showHelp);
+  }
 
 function showAchievementToast({ title, desc, icon }) {
   const wrap = document.getElementById("achievementToasts");
@@ -276,8 +346,9 @@ function renderAchievementBadges() {
 
   badgeWrap.innerHTML = "";
 
-  const unlockedIds = Object.keys(game.achievementsUnlocked || {})
-    .filter(id => game.achievementsUnlocked[id]);
+  const unlockedIds = Object.keys(game.achievementsUnlocked || {}).filter(
+    (id) => game.achievementsUnlocked[id]
+  );
 
   if (unlockedIds.length === 0) {
     badgeWrap.innerHTML = `
@@ -303,33 +374,24 @@ function renderAchievementBadges() {
   }
 }
 
-for (const id of unlockedIds) {
-    const meta = getAchievementMeta(id);
-    if (!meta) continue;
-
-    const badge = document.createElement("div");
-    badge.className = "badge";
-    badge.innerHTML = `
-      <div class="badge-icon">${meta.icon || "✨"}</div>
-      <div class="badge-name">${meta.title}</div>
-      <div class="badge-sub">${meta.badgeSub || ""}</div>
-    `;
-    badgeWrap.appendChild(badge);
-  }
-
 function getAchievementMeta(id) {
   // Static achievements
   const staticMap = {
-    first_100:   { title: "Pearl Beginner", icon: "🧋", badgeSub: "100 boba" },
+    first_100: { title: "Pearl Beginner", icon: "🧋", badgeSub: "100 boba" },
     first_10000: { title: "Boba Hoarder", icon: "💎", badgeSub: "10k boba" },
-    first_1m:    { title: "Boba Millionaire", icon: "🏆", badgeSub: "1M boba" }
+    first_1m: { title: "Boba Millionaire", icon: "🏆", badgeSub: "1M boba" }
   };
 
   if (staticMap[id]) return staticMap[id];
-// Doubling achievements: id looks like "double_2", "double_4", ...
+
+  // Doubling achievements: id looks like "double_2", "double_4", ...
   if (id.startsWith("double_")) {
     const val = id.split("_")[1];
-    return { title: "Double Trouble!", icon: "⚡", badgeSub: `Reached ${Number(val).toLocaleString()}` };
+    return {
+      title: "Double Trouble!",
+      icon: "⚡",
+      badgeSub: `Reached ${Number(val).toLocaleString()}`
+    };
   }
 
   return null;
@@ -350,13 +412,28 @@ function checkAchievements() {
   const b = game.boba;
 
   // Threshold achievements
-  if (b >= 100) unlockAchievement("first_100", { title: "Pearl Beginner", desc: "You reached 100 boba!", icon: "🧋" });
-  if (b >= 10000) unlockAchievement("first_10000", { title: "Boba Hoarder", desc: "You reached 10,000 boba!", icon: "💎" });
-  if (b >= 1000000) unlockAchievement("first_1m", { title: "Boba Millionaire", desc: "You reached 1,000,000 boba!", icon: "🏆" });
+  if (b >= 100)
+    unlockAchievement("first_100", {
+      title: "Pearl Beginner",
+      desc: "You reached 100 boba!",
+      icon: "🧋"
+    });
+  if (b >= 10000)
+    unlockAchievement("first_10000", {
+      title: "Boba Hoarder",
+      desc: "You reached 10,000 boba!",
+      icon: "💎"
+    });
+  if (b >= 1000000)
+    unlockAchievement("first_1m", {
+      title: "Boba Millionaire",
+      desc: "You reached 1,000,000 boba!",
+      icon: "🏆"
+    });
 
   // Doubling milestones (1 -> 2 -> 4 -> 8 -> ...)
-  // We track the next power-of-two milestone based on lastBobaMilestone.
-  if (!game.lastBobaMilestone || game.lastBobaMilestone < 1) game.lastBobaMilestone = 1;
+  if (!game.lastBobaMilestone || game.lastBobaMilestone < 1)
+    game.lastBobaMilestone = 1;
 
   while (b >= game.lastBobaMilestone * 2) {
     game.lastBobaMilestone *= 2;
@@ -368,6 +445,5 @@ function checkAchievements() {
     });
   }
 
-  // persist lastBobaMilestone if it changed
   game.saveGame();
 }
