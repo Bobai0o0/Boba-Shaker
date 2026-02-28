@@ -22,34 +22,34 @@ const game = {
   
   loadGame() {
     const saved = localStorage.getItem("bobaGame");
-    if (saved) {
-      const data = JSON.parse(saved);
+    if (!saved) return;
 
-      this.boba = data.boba || 0;
+    const data = JSON.parse(saved);
 
-     
-      if (data.upgrades) {
-        for (let upgrade in this.upgrades) {
-          if (
-            data.upgrades[upgrade] &&
-            typeof data.upgrades[upgrade].owned === "number"
-          ) {
-            this.upgrades[upgrade].owned = data.upgrades[upgrade].owned;
-          }
+    this.boba = data.boba ?? 0;
+
+    if (data.upgrades) {
+      for (let upgrade in this.upgrades) {
+        if (data.upgrades[upgrade]) {
+          this.upgrades[upgrade].owned = data.upgrades[upgrade].owned ?? 0;
+          this.upgrades[upgrade].cost = data.upgrades[upgrade].cost ?? this.upgrades[upgrade].cost;
         }
       }
-
-      
-      if (data.clickMultiplier) this.clickMultiplier = data.clickMultiplier;
-      if (data.mixerMultiplier) this.mixerMultiplier = data.mixerMultiplier;
-      if (data.machineMultiplier) this.machineMultiplier = data.machineMultiplier;
-
-     
-      this.achievementsUnlocked = data.achievementsUnlocked || {};
-      this.lastBobaMilestone = data.lastBobaMilestone ?? 1;
-
-      this.updatePerSecond();
     }
+
+    this.clickMultiplier = data.clickMultiplier ?? 1;
+    this.mixerMultiplier = data.mixerMultiplier ?? 1;
+    this.machineMultiplier = data.machineMultiplier ?? 1;
+
+    if (this.upgrades.clickMultiply.owned >= 1 && this.clickMultiplier === 1) this.clickMultiplier = 2;
+    if (this.upgrades.mixerBoost.owned >= 1 && this.mixerMultiplier === 1) this.mixerMultiplier = 2;
+    if (this.upgrades.machineBoost.owned >= 1 && this.machineMultiplier === 1) this.machineMultiplier = 2;
+
+    this.achievementsUnlocked = data.achievementsUnlocked || {};
+    this.lastBobaMilestone = data.lastBobaMilestone ?? 1;
+
+    this.updatePerSecond();
+    this.updateDisplay();
   },
 
   saveGame() {
@@ -432,6 +432,5 @@ function checkAchievements() {
 
   game.saveGame();
 }
-
 
 
