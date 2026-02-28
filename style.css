@@ -241,7 +241,7 @@ body {
   flex: 1;        
   overflow-y: auto; 
   min-height: 0;    
-  scrollbar-width: none; 
+  scrollbar-width: none;  
 }
 
 /*Hidiing ScrollBar because it's Ugly*/
