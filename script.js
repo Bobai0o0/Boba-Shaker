@@ -298,6 +298,7 @@ function setupUI() {
   });
 }
 
+//Function Declaration 
 function showAchievementToast({ title, desc, icon }) {
   const wrap = document.getElementById("achievementToasts");
   if (!wrap) return;
@@ -431,5 +432,6 @@ function checkAchievements() {
 
   game.saveGame();
 }
+
 
 
