@@ -59,7 +59,9 @@ body {
 
 .right {
   grid-area: right;
-  overflow: hidden;      /* prevent panel from expanding */
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Bubble Glass Panels */
@@ -141,7 +143,7 @@ body {
 }
 
 .per-second {
-  font-size: 5rem;          /* BIG number */
+  font-size: 5rem;   
   font-weight: 900;
   line-height: 1;
   margin: 10px 0;
@@ -238,8 +240,18 @@ body {
 .store-container {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: 100%;
+  gap: 12px;   
+  width: 100%;  
+  flex: 1;        
+  overflow-y: auto; 
+  min-height: 0;    
+  scrollbar-width: none; 
+}
+
+/*Hidiing ScrollBar because it's Ugly*/
+.store-container::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
 }
 
 .store-title {
@@ -249,7 +261,7 @@ body {
   margin-bottom: 8px;
   letter-spacing: 1px;
 
-  overflow-y: auto;      /* vertical scroll */
+  overflow-y: auto; /* vertical scroll */
   max-height: 100%;   
   padding-right: 5px;
 }
@@ -277,7 +289,7 @@ body {
 
 /* --- Achievements UI --- */
 .center {
-  position: relative; /* so toasts can center inside this panel */
+  position: relative; 
 }
 
 .achievement-toasts {
@@ -290,7 +302,7 @@ body {
   flex-direction: column;
   gap: 10px;
   z-index: 10;
-  pointer-events: none; /* allow clicking through except buttons inside */
+  pointer-events: none; 
 }
 
 .achievement-toast {
@@ -382,17 +394,17 @@ body {
   gap: 14px;
   overflow-x: auto;
   padding: 6px 0;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none; 
 }
 
 .footer-badges::-webkit-scrollbar {
-  display: none; /* Chrome */
+  display: none;
 }
 
 /* Large badge style */
 .badge {
   min-width: 110px;
-  padding: 8px 8px;   /* reduced from 12px 10px */
+  padding: 8px 8px;  
   border-radius: 16px;
 
   background: rgba(255,255,255,0.18);
@@ -412,17 +424,17 @@ body {
 }
 
 .badge-icon {
-  font-size: 20px;   /* was 22px */
-  margin-bottom: 2px; /* was 4px */
+  font-size: 20px; 
+  margin-bottom: 2px; 
 }
 
 .badge-name {
-  font-size: 12px;   /* was 13px */
+  font-size: 12px;  
   font-weight: 700;
 }
 
 .badge-sub {
-  font-size: 10px;   /* was 11px */
+  font-size: 10px;  
   opacity: 0.8;
-  margin-top: 1px;   /* was 2px */
+  margin-top: 1px;  
 }
