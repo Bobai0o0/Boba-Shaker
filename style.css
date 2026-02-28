@@ -1,11 +1,10 @@
-/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Background Image with Warm Overlay */
+/* Background Image*/
 body {
   height: 100vh;
   font-family: "Trebuchet MS", Verdana, sans-serif;
@@ -122,10 +121,7 @@ body {
   transform: scale(1.05);
 }
 
-/* ============================= */
-/* CENTER STATS SCALING */
-/* ============================= */
-
+/*Stats Container*/
 .stats-container {
   display: flex;
   flex-direction: column;
