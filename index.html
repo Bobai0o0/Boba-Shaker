@@ -6,7 +6,6 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
   <div class="app">
     <div class="section header">Boba Shaker</div>
     <div class="section left">
@@ -26,6 +25,12 @@
         <div class="stats-title">STATS 🧋</div>
         <div class="per-second" id="perSecond">0</div>
         <div class="stats-label">Per Second</div>
+        <div class="stat-small">
+          Click Value: <span id="clickValue">1</span>
+        </div>
+        <div class="stat-small">
+          Total Upgrades: <span id="totalUpgrades">0</span>
+        </div>
         <button id="helpButton" class="help-btn">Help!</button>
       </div>
     </div>
@@ -55,6 +60,37 @@
       </div>
     </div>
   </div>
-<script src="script.js"></script>
+  <div id="helpOverlay" class="help-overlay hidden">
+    <div class="help-panel">
+      <button id="closeHelp" class="help-close">×</button>
+
+      <h2>🧋 BOBA SHAKER HELP 🧋</h2>
+
+      <h3>HOW TO PLAY</h3>
+      <p>• Click the boba image to earn boba</p>
+      <p>• Buy upgrades to earn boba per second</p>
+      <p>• Buy boosts to increase production</p>
+      <p>• As your boba per second increases, the animation gets faster</p>
+
+      <h3>UPGRADES</h3>
+      <p>• Spoon: +1 boba/sec</p>
+      <p>• Mixer: +5 boba/sec</p>
+      <p>• Machine: +25 boba/sec</p>
+      <p>• Robot: +100 boba/sec</p>
+
+      <h3>BOOSTS</h3>
+      <p>• Click Boost: +1 click power</p>
+      <p>• Click Multiplier: doubles click power</p>
+      <p>• Mixer Boost: doubles mixer output</p>
+      <p>• Machine Boost: doubles machine output</p>
+
+      <h3>ACHIEVEMENTS</h3>
+      <p>• Pearl Beginner: reach 100 boba</p>
+      <p>• Boba Hoarder: reach 10,000 boba</p>
+      <p>• Boba Millionaire: reach 1,000,000 boba</p>
+      <p>• Double Trouble: reach 2, 4, 8, 16, 32, ... boba (doubling milestones)</p>
+    </div>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>

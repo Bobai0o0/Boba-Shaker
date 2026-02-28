@@ -127,6 +127,7 @@ const game = {
     if (this.boba >= upgrade.cost) {
       this.boba -= upgrade.cost;
       upgrade.owned += 1;
+      upgrade.cost = Math.floor(upgrade.cost * 1.15);
 
       // Special effects for new upgrades
       if (upgradeName === "clickMultiply") this.clickMultiplier *= 2; 
@@ -138,7 +139,11 @@ const game = {
       this.saveGame();
       this.updateDisplay();
     } else {
-      alert(`Need ${upgrade.cost - this.boba} more boba!`);
+      showAchievementToast({
+        title: "Not Enough Boba!",
+        desc: `You need ${upgrade.cost - this.boba} more.`,
+        icon: "⚠️"
+      });
     }
   },
 
@@ -146,6 +151,20 @@ const game = {
     // Update numbers
     document.getElementById("bobaCount").textContent = this.boba.toLocaleString();
     document.getElementById("perSecond").textContent = this.perSecond.toLocaleString();
+    // Calculate click value
+    let clickValue = 1;
+    clickValue += this.upgrades.clickBoost.owned;
+    clickValue *= this.clickMultiplier;
+
+    document.getElementById("clickValue").textContent = clickValue;
+
+    // Calculate total upgrades owned
+    let total = 0;
+    for (let upgrade in this.upgrades) {
+      total += this.upgrades[upgrade].owned;
+    }
+
+    document.getElementById("totalUpgrades").textContent = total;
 
     // Update store buttons
     for (let upgrade in this.upgrades) {
@@ -253,6 +272,18 @@ document.addEventListener("DOMContentLoaded", function () {
       game.addBoba(game.perSecond);
     }
   }, 1000);
+
+  const helpBtn = document.getElementById("helpButton");
+  const helpOverlay = document.getElementById("helpOverlay");
+  const closeHelp = document.getElementById("closeHelp");
+
+  helpBtn.addEventListener("click", function () {
+    helpOverlay.classList.remove("hidden");
+  });
+
+  closeHelp.addEventListener("click", function () {
+    helpOverlay.classList.add("hidden");
+  });
 });
 
 function setupUI() {
@@ -261,7 +292,7 @@ function setupUI() {
 
   // Clicking GIF gives Boba
   clickImg.addEventListener("click", function () {
-    game.addBoba(1);
+    game.addBoba();
 
     // Press animation
     this.style.transform = "scale(0.95)";
@@ -276,42 +307,6 @@ function setupUI() {
     }, 500);
   });
 }
-
-// Help Pop Up! 
-function showHelp() {
-  alert(
-`🧋 BOBA SHAKER HELP 🧋
-
-HOW TO PLAY:
-• Click the boba image to earn boba
-• Buy upgrades to earn boba per second
-• Buy boosts to double specific production
-• As your boba per second increases, the animation gets faster
-
-UPGRADES:
-• Spoon: +1 boba/sec
-• Mixer: +5 boba/sec (affected by Mixer Boost)
-• Machine: +25 boba/sec (affected by Machine Boost)
-• Robot: +100 boba/sec
-
-BOOSTS:
-• Click Boost: +1 click power
-• Click Multiplier: doubles click power (one-time)
-• Mixer Boost: doubles mixer output (one-time)
-• Machine Boost: doubles machine output (one-time)
-
-ACHIEVEMENTS:
-• Pearl Beginner: reach 100 boba
-• Boba Hoarder: reach 10,000 boba
-• Boba Millionaire: reach 1,000,000 boba
-• Double Trouble: reach 2, 4, 8, 16, 32, ... boba (doubling milestones)`
-  );
-}
-  //Button ACTIVATION!
-  const helpBtn = document.getElementById("helpButton");
-  if (helpBtn) {
-    helpBtn.addEventListener("click", showHelp);
-  }
 
 function showAchievementToast({ title, desc, icon }) {
   const wrap = document.getElementById("achievementToasts");
