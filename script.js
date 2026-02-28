@@ -235,9 +235,9 @@ function updateAnimationSpeed() {
   }
 }
 
-// ------------------------------
+
 // UI Setup
-// ------------------------------
+
 document.addEventListener("DOMContentLoaded", function () {
   setupUI();
 
@@ -431,4 +431,5 @@ function checkAchievements() {
 
   game.saveGame();
 }
+
 
